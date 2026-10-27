@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retail Sales Performance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#14231f;--mut:#5b6b66;--line:#dbe2df;--laptop:#0f5c4d;--mobile:#d98a1c;--tablet:#6b7fb8;--acc:#0f5c4d;--bar:#0f5c4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1715;--card:#17221f;--ink:#e8f0ed;--mut:#9fb0aa;--line:#2a3a36;--laptop:#3fbf9f;--mobile:#f0a840;--tablet:#8fa3dc;--acc:#3fbf9f;--bar:#3fbf9f;color-scheme:dark}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1rem;margin:0 0 2px}
+.sub{color:var(--mut);margin:0 0 16px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.filters{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:14px}
+.fg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.fg b{font-size:.85rem;margin-right:4px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.reset{margin-left:auto;background:none;border:none;color:var(--acc);cursor:pointer;font-size:.85rem;text-decoration:underline}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+.kpi .v{font-size:1.7rem;font-weight:700}.kpi .l{color:var(--mut);font-size:.85rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px}
+.ch{position:relative;height:250px;margin-top:8px}
+.msg{border-left:4px solid var(--acc)}
+.msg p{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.sc{overflow-x:auto}
+ul{margin:6px 0 0;padding-left:20px}li{margin-bottom:4px}
+</style></head><body><div class="wrap">
+<h1>Retail Sales Performance, January to April</h1>
+<p class="sub">Monthly sales by region and product. All amounts in Philippine pesos (₱). Use the filters to explore.</p>
+
+<div class="card filters" role="group" aria-label="Filters">
+<div class="fg" id="fm"><b>Month</b></div>
+<div class="fg" id="fr"><b>Region</b></div>
+<div class="fg" id="fp"><b>Product</b></div>
+<button class="reset" id="rs">Reset filters</button>
+</div>
+
+<div class="card msg" style="margin-bottom:12px">
+<h2 id="head"></h2><p id="why" class="sub" style="margin:0"></p>
+</div>
+
+<div class="kpis">
+<div class="card kpi"><div class="l">Total sales revenue</div><div class="v" id="k1"></div></div>
+<div class="card kpi"><div class="l">Total units sold</div><div class="v" id="k2"></div></div>
+<div class="card kpi"><div class="l">Average monthly sales</div><div class="v" id="k3"></div></div>
+<div class="card kpi"><div class="l">Average price per unit</div><div class="v" id="k4"></div></div>
+<div class="card kpi"><div class="l" id="k5l">Change, first to last month</div><div class="v" id="k5"></div></div>
+</div>
+
+<div class="grid">
+<div class="card"><h2>Monthly sales trend</h2><div class="sub" id="t1" style="margin:0"></div><div class="ch"><canvas id="c1"></canvas></div></div>
+<div class="card"><h2>Sales by region</h2><div class="sub" id="t2" style="margin:0"></div><div class="ch"><canvas id="c2"></canvas></div></div>
+<div class="card"><h2>Sales by product</h2><div class="sub" id="t3" style="margin:0"></div><div class="ch"><canvas id="c3"></canvas></div></div>
+<div class="card"><h2>Units sold by product</h2><div class="sub" id="t4" style="margin:0"></div><div class="ch"><canvas id="c4"></canvas></div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+<h2>Dataset used</h2><p class="sub" style="margin:0 0 6px">The records below update with the filters.</p>
+<div class="sc"><table><thead><tr><th>Month</th><th>Region</th><th>Product</th><th>Sales (₱)</th><th>Units sold</th></tr></thead><tbody id="tb"></tbody></table></div>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+<h2>Analytical summary (full dataset)</h2>
+<div class="sc"><table>
+<tr><th>Key finding</th><th>Evidence</th><th>Business implication</th></tr>
+<tr><td>Sales grew every month.</td><td>₱370,000 in January to ₱510,000 in April, up 37.8%. Monthly gains: +14.9%, +10.6%, +8.5%.</td><td>Demand is rising, but the rate of growth is slowing each month.</td></tr>
+<tr><td>Laptops drive nearly half of revenue.</td><td>₱815,000 of ₱1,775,000 (45.9%) from only 82 units. Mobile phones: ₱665,000 (37.5%). Tablets: ₱295,000 (16.6%).</td><td>Revenue depends heavily on high-priced laptops. Stock and pricing there matter most.</td></tr>
+<tr><td>Mobile phones lead in volume.</td><td>220 of 400 units (55%), but average price per unit is about ₱3,023 versus about ₱9,939 for laptops.</td><td>Phones bring customers in. Laptops bring the revenue.</td></tr>
+<tr><td>North leads, but regions are close.</td><td>North ₱475,000, South ₱450,000, West ₱430,000, East ₱420,000. The gap from first to last is only ₱55,000 (11.6% of North).</td><td>No region is failing. Small gains in East and West would narrow the gap.</td></tr>
+<tr><td>Tablets are the weakest line.</td><td>₱295,000 total (16.6% of revenue) from 98 units, and tablets appear in only 4 of 16 records.</td><td>Tablets add little revenue. Management should decide whether to promote them or reduce stock.</td></tr>
+</table></div>
+<h2 style="margin-top:14px">Recommendations</h2>
+<ul>
+<li><b>Study April.</b> It was the best month (₱510,000), led by North laptops (₱160,000). Find what drove it and repeat it in other regions.</li>
+<li><b>Protect laptop supply and bundle phones with accessories.</b> Laptops earn the most per sale; phones sell the most units.</li>
+<li><b>Review tablet strategy.</b> Run a targeted promotion in East and West, or reduce tablet stock if demand stays low.</li>
+<li><b>Share North's practices with East and West</b> to close the regional gap.</li>
+</ul>
+<p class="sub" style="margin-top:10px">Note: each row in the dataset is one product in one region and month, so not every product appears in every region. Filtered totals reflect only those rows.</p>
+</div>
+</div>
+<script>
+var D=[["Jan","North","Laptop",120000,12],["Jan","South","Mobile Phone",90000,30],["Jan","East","Tablet",60000,20],["Jan","West","Laptop",100000,10],
+["Feb","North","Mobile Phone",110000,36],["Feb","South","Laptop",150000,15],["Feb","East","Mobile Phone",95000,32],["Feb","West","Tablet",70000,23],
+["Mar","North","Tablet",85000,28],["Mar","South","Mobile Phone",130000,43],["Mar","East","Laptop",140000,14],["Mar","West","Mobile Phone",115000,38],
+["Apr","North","Laptop",160000,16],["Apr","South","Tablet",80000,27],["Apr","East","Mobile Phone",125000,41],["Apr","West","Laptop",145000,15]];
+var M=["Jan","Feb","Mar","Apr"],MF={Jan:"January",Feb:"February",Mar:"March",Apr:"April"},R=["North","South","East","West"],P=["Laptop","Mobile Phone","Tablet"];
+var sel={m:new Set(M),r:new Set(R),p:new Set(P)};
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function peso(n){return "₱"+Math.round(n).toLocaleString("en-US")}
+function mk(id,list,key,labels){var el=document.getElementById(id);list.forEach(function(v){var b=document.createElement("button");b.className="chip";b.textContent=v;b.setAttribute("aria-pressed","true");b.onclick=function(){var s=sel[key];if(s.has(v)){if(s.size>1)s.delete(v)}else s.add(v);sync();draw()};b.dataset.k=key;b.dataset.v=v;el.appendChild(b)})}
+function sync(){document.querySelectorAll(".chip").forEach(function(b){b.setAttribute("aria-pressed",sel[b.dataset.k].has(b.dataset.v))})}
+mk("fm",M,"m");mk("fr",R,"r");mk("fp",P,"p");
+document.getElementById("rs").onclick=function(){sel={m:new Set(M),r:new Set(R),p:new Set(P)};sync();draw()};
+var ch={};
+function agg(rows,ix,keys,col){return keys.map(function(k){return rows.filter(function(r){return r[ix]===k}).reduce(function(a,r){return a+r[col]},0)})}
+function chart(id,type,labels,data,colors,horiz,fmt){
+ if(ch[id])ch[id].destroy();var ink=css("--mut"),ln=css("--line");
+ ch[id]=new Chart(document.getElementById(id),{type:type,data:{labels:labels,datasets:[{data:data,backgroundColor:colors,borderColor:colors,borderWidth:type==="line"?3:0,tension:0,pointRadius:5,fill:false}]},
+ options:{indexAxis:horiz?"y":"x",responsive:true,maintainAspectRatio:false,animation:false,
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmt(c.parsed[horiz?"x":"y"])}}}},
+ scales:{x:{ticks:{color:ink},grid:{display:horiz,color:ln}},y:{beginAtZero:true,ticks:{color:ink,callback:function(v){return horiz?v:fmt(v)}},grid:{color:ln}}}}});
+ if(type==="bar"){ch[id].options.plugins.datalabels=null}
+}
+function draw(){
+ var rows=D.filter(function(r){return sel.m.has(r[0])&&sel.r.has(r[1])&&sel.p.has(r[2])});
+ var tot=rows.reduce(function(a,r){return a+r[3]},0),u=rows.reduce(function(a,r){return a+r[4]},0);
+ var months=M.filter(function(m){return sel.m.has(m)});
+ document.getElementById("k1").textContent=peso(tot);document.getElementById("k2").textContent=u.toLocaleString("en-US");
+ document.getElementById("k3").textContent=peso(tot/months.length);document.getElementById("k4").textContent=u?peso(tot/u):"–";
+ var ms=agg(rows,0,M,3),rs=agg(rows,1,R,3),ps=agg(rows,2,P,3),pu=agg(rows,2,P,4);
+ var best=function(a,l){var i=a.indexOf(Math.max.apply(null,a));return a[i]>0?l[i]:"none"};
+ var full=sel.m.size===4&&sel.r.size===4&&sel.p.size===3;
+ document.getElementById("head").textContent=full?"Sales rose 37.8% from January to April, led by laptops and the North region.":"Filtered view: "+peso(tot)+" in sales across "+rows.length+" records.";
+ document.getElementById("why").textContent=full?"Why it matters: growth is real but slowing each month, and nearly half of revenue comes from laptops, so supply and pricing there carry the most risk.":"Top month: "+best(ms,M)+". Top region: "+best(rs,R)+". Top product: "+best(ps,P)+". Reset filters to see the full story.";
+ document.getElementById("t1").textContent="Highest: "+best(ms,M);document.getElementById("t2").textContent="Highest: "+best(rs,R);
+ document.getElementById("t3").textContent="Highest: "+best(ps,P);document.getElementById("t4").textContent="Most units: "+best(pu,P);
+ var g=css("--bar"),pc=[css("--laptop"),css("--mobile"),css("--tablet")];
+ chart("c1","line",M.map(function(m){return MF[m]}),ms,g,false,peso);
+ chart("c2","bar",R,rs,g,false,peso);
+ chart("c3","bar",P,ps,pc,true,peso);
+ chart("c4","bar",P,pu,pc,true,function(v){return v+" units"});
+}
+function chart(id,type,labels,data,colors,horiz,fmt,vt,ct){
+ if(ch[id])ch[id].destroy();var ink=css("--mut"),ln=css("--line"),tc=css("--ink");
+ var lab={id:"lab",afterDatasetsDraw:function(c){var x=c.ctx;x.save();x.fillStyle=tc;x.font="600 12px sans-serif";x.textAlign=horiz?"left":"center";c.getDatasetMeta(0).data.forEach(function(e,i){var t=fmt(data[i]);if(horiz)x.fillText(t,e.x+6,e.y+4);else x.fillText(t,e.x,e.y-10)});x.restore()}};
+ var val={beginAtZero:true,title:{display:true,text:vt,color:ink},ticks:{color:ink,callback:function(v){return fmt(v)}},grid:{color:ln}};
+ var cat={title:{display:true,text:ct,color:ink},ticks:{color:ink},grid:{display:false}};
+ ch[id]=new Chart(document.getElementById(id),{type:type,data:{labels:labels,datasets:[{data:data,backgroundColor:colors,borderColor:colors,borderWidth:type==="line"?3:0,pointRadius:5,fill:false}]},plugins:[lab],
+ options:{indexAxis:horiz?"y":"x",responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:horiz?{right:90}:{top:24,right:24}},
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmt(c.parsed[horiz?"x":"y"])}}}},scales:horiz?{x:val,y:cat}:{x:cat,y:val}}});
+}
+function draw(){
+ var rows=D.filter(function(r){return sel.m.has(r[0])&&sel.r.has(r[1])&&sel.p.has(r[2])});
+ var sM=M.filter(function(x){return sel.m.has(x)}),sR=R.filter(function(x){return sel.r.has(x)}),sP=P.filter(function(x){return sel.p.has(x)});
+ var tot=rows.reduce(function(a,r){return a+r[3]},0),u=rows.reduce(function(a,r){return a+r[4]},0);
+ var ms=agg(rows,0,sM,3),rs=agg(rows,1,sR,3),ps=agg(rows,2,sP,3),pu=agg(rows,2,sP,4);
+ var best=function(a,l){var i=a.indexOf(Math.max.apply(null,a));return a[i]>0?l[i]:"none"};
+ document.getElementById("k1").textContent=peso(tot);document.getElementById("k2").textContent=u.toLocaleString("en-US");
+ document.getElementById("k3").textContent=peso(tot/sM.length);document.getElementById("k4").textContent=u?peso(tot/u):"–";
+ var k5="–",k5l="Change over time (select 2+ months)";
+ if(sM.length>1){var a=ms[0],b=ms[ms.length-1];k5l="Change, "+sM[0]+" to "+sM[sM.length-1];if(a>0){var pc=(b-a)/a*100;k5=(pc>=0?"+":"")+pc.toFixed(1)+"%"}}
+ document.getElementById("k5").textContent=k5;document.getElementById("k5l").textContent=k5l;
+ var full=sel.m.size===4&&sel.r.size===4&&sel.p.size===3;
+ document.getElementById("head").textContent=full?"Sales rose 37.8% from January to April, led by laptops and the North region.":"Filtered view: "+peso(tot)+" in sales across "+rows.length+" records.";
+ document.getElementById("why").textContent=full?"Why it matters: growth is real but slowing each month, and nearly half of revenue comes from laptops, so supply and pricing there carry the most risk.":"Top month: "+best(ms,sM)+". Top region: "+best(rs,sR)+". Top product: "+best(ps,sP)+". Reset filters to see the full story.";
+ document.getElementById("t1").textContent="Highest: "+best(ms,sM);document.getElementById("t2").textContent="Highest: "+best(rs,sR);
+ document.getElementById("t3").textContent="Highest: "+best(ps,sP);document.getElementById("t4").textContent="Most units: "+best(pu,sP);
+ var cm={Laptop:css("--laptop"),"Mobile Phone":css("--mobile"),Tablet:css("--tablet")},g=css("--bar"),pcol=sP.map(function(p){return cm[p]});
+ chart("c1","line",sM.map(function(m){return MF[m]}),ms,g,false,peso,"Total sales (₱)","Month");
+ chart("c2","bar",sR,rs,g,false,peso,"Total sales (₱)","Region");
+ chart("c3","bar",sP,ps,pcol,true,peso,"Total sales (₱)","Product");
+ chart("c4","bar",sP,pu,pcol,true,function(v){return Math.round(v)+" units"},"Units sold","Product");
+ document.getElementById("tb").innerHTML=rows.length?rows.map(function(r){return "<tr><td>"+MF[r[0]]+"</td><td>"+r[1]+"</td><td>"+r[2]+"</td><td>"+r[3].toLocaleString("en-US")+"</td><td>"+r[4]+"</td></tr>"}).join(""):"<tr><td colspan=5>No records match these filters.</td></tr>";
+}
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",draw);
+draw();
+</script></body></html>
