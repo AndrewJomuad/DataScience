@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retail Sales Performance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#14231f;--mut:#5b6b66;--line:#dbe2df;--laptop:#0f5c4d;--mobile:#d98a1c;--tablet:#6b7fb8;--acc:#0f5c4d;--bar:#0f5c4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1715;--card:#17221f;--ink:#e8f0ed;--mut:#9fb0aa;--line:#2a3a36;--laptop:#3fbf9f;--mobile:#f0a840;--tablet:#8fa3dc;--acc:#3fbf9f;--bar:#3fbf9f;color-scheme:dark}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1rem;margin:0 0 2px}
+.sub{color:var(--mut);margin:0 0 16px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.filters{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:14px}
+.fg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.fg b{font-size:.85rem;margin-right:4px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.reset{margin-left:auto;background:none;border:none;color:var(--acc);cursor:pointer;font-size:.85rem;text-decoration:underline}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+.kpi .v{font-size:1.7rem;font-weight:700}.kpi .l{color:var(--mut);font-size:.85rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px}
+.ch{position:relative;height:250px;margin-top:8px}
+.msg{border-left:4px solid var(--acc)}
+.msg p{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.sc{overflow-x:auto}
+ul{margin:6px 0 0;padding-left:20px}li{margin-bottom:4px}
+.bc{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 0}.bcb{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:4px 11px;font-size:.85rem;cursor:pointer}.bcb[aria-current="true"]{background:var(--acc);color:#fff;border-color:var(--acc);cursor:default}.bcb:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+:root{--bg:#f4f3fb;--card:#fff;--ink:#1b1a33;--mut:#6a6890;--line:#e6e4f5;--acc:#5b4bdb;--bar:#5b4bdb;--laptop:#4f46e5;--mobile:#f59e0b;--tablet:#ec4899;--rN:#06b6d4;--rS:#10b981;--rE:#f97316;--rW:#8b5cf6;--mJ:#3b82f6;--mF:#14b8a6;--mM:#f59e0b;--mA:#ef4444;--sh:0 4px 18px rgba(60,50,140,.09)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121127;--card:#1b1a38;--ink:#efeeff;--mut:#a9a7d0;--line:#2e2c57;--acc:#8c7dff;--bar:#8c7dff;--laptop:#8c85ff;--mobile:#fbbf24;--tablet:#f472b6;--rN:#22d3ee;--rS:#34d399;--rE:#fb923c;--rW:#a78bfa;--mJ:#60a5fa;--mF:#2dd4bf;--mM:#fbbf24;--mA:#f87171;--sh:0 4px 18px rgba(0,0,0,.4)}}
+.wrap{max-width:1200px}
+.hero{background:linear-gradient(120deg,#4f46e5,#7c3aed 50%,#ec4899);color:#fff;border-radius:18px;padding:28px 26px;margin-bottom:16px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-50px;top:-70px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.14)}
+.hero::before{content:"";position:absolute;right:120px;bottom:-90px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero h1{font-size:1.9rem;letter-spacing:-.02em;margin:0 0 6px;position:relative}.hero p{margin:0;opacity:.92;position:relative}
+.card{border-radius:14px;box-shadow:var(--sh)}
+.card h2{font-size:1.05rem}
+.chip{transition:transform .15s,box-shadow .15s}.chip:hover{transform:translateY(-1px);box-shadow:var(--sh)}
+.chip[aria-pressed="true"]{background:linear-gradient(135deg,#5b4bdb,#7c3aed);border-color:transparent;color:#fff}
+.reset{border:1px solid var(--acc);border-radius:999px;padding:5px 14px;text-decoration:none;font-weight:600}
+.msg{border-left:5px solid #ec4899;background:linear-gradient(90deg,rgba(236,72,153,.1),transparent 70%),var(--card)}
+.msg h2{font-size:1.2rem}
+.kpi{border-top:4px solid var(--k);position:relative;padding-top:14px}.kpi .v{color:var(--k)}
+.kpi::after{position:absolute;right:14px;top:14px;font-size:1.6rem}
+.kpis .kpi:nth-child(1){--k:#6366f1}.kpis .kpi:nth-child(1)::after{content:"💰"}
+.kpis .kpi:nth-child(2){--k:#10b981}.kpis .kpi:nth-child(2)::after{content:"📦"}
+.kpis .kpi:nth-child(3){--k:#f59e0b}.kpis .kpi:nth-child(3)::after{content:"📅"}
+.kpis .kpi:nth-child(4){--k:#ec4899}.kpis .kpi:nth-child(4)::after{content:"🏷️"}
+.kpis .kpi:nth-child(5){--k:#06b6d4}.kpis .kpi:nth-child(5)::after{content:"📈"}
+.ch{height:270px}
+.bcb:hover:not([aria-current]){border-color:var(--acc)}
+th{background:rgba(124,92,230,.1)}#tb tr:hover{background:rgba(25,211,168,.08)}
+:root:not([data-theme="light"]){color-scheme:dark;--bg:#06121c;--card:#0a1c28;--ink:#e8fbf6;--mut:#7fa6a0;--line:#12313d;--acc:#19d3a8;--bar:#19d3a8;--laptop:#e0a82e;--mobile:#1e78d6;--tablet:#1de0b0;--rN:#2a8be0;--rS:#1ab7d6;--rE:#1de0b0;--rW:#8cf2dc;--mJ:#2a8be0;--mF:#1ab7d6;--mM:#1de0b0;--mA:#e0a82e;--sh:none}
+body{background:var(--bg)}
+.hero{background:none;box-shadow:none;border-radius:0;padding:4px 0 12px}.hero::before,.hero::after{display:none}
+.hero h1{font-size:2.3rem;font-weight:800;color:#fff}.hero p{color:var(--mut)}
+.card{border-radius:2px;border:1px solid var(--line);background:var(--card)}
+.card h2{color:#fff;font-size:1.15rem;font-weight:700}
+.sub{color:var(--mut)}
+.chip{background:#0d2431;border-color:var(--line);color:var(--ink)}
+.chip[aria-pressed="true"]{background:#19d3a8;color:#04141b;border-color:#19d3a8;font-weight:600}
+.reset{color:#19d3a8;border-color:#19d3a8}
+.msg{border-left:5px solid #19d3a8;background:var(--card)}
+.kpi{background:#02090e;border-top:none;border-left:4px solid #19d3a8}
+.kpi::after{display:none}.kpi .l{color:#fff;font-weight:700}.kpi .v{color:#1de0b0;font-size:2rem}
+th{background:transparent;color:#19d3a8}
+td,th{border-bottom:1px solid var(--line)}
+.bcb{background:#0d2431}.bcb[aria-current="true"]{background:#19d3a8;color:#04141b;border-color:#19d3a8}
+.gg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:8px}
+.gw{position:relative;height:170px}.gv{position:absolute;left:0;right:0;bottom:34px;text-align:center;font-size:1.6rem;font-weight:700;color:#1de0b0}
+.gl{position:absolute;left:0;right:0;bottom:6px;text-align:center;color:var(--mut)}
+:root:not([data-theme="light"]){color-scheme:light;--bg:#e6f0fa;--card:#fff;--ink:#14233f;--mut:#5d6f8c;--line:#dde7f3;--acc:#1565c0;--bar:#1e88e5;--laptop:#0b64ad;--mobile:#34b4f5;--tablet:#fb7b7b;--rN:#0b64ad;--rS:#34b4f5;--rE:#5328a6;--rW:#fb7b7b;--mJ:#0b64ad;--mF:#34b4f5;--mM:#5328a6;--mA:#fb7b7b}
+body{background:linear-gradient(180deg,#d9e9f9 0%,#eceffa 60%,#e6e6f6 100%) fixed}
+html{scroll-behavior:smooth}h2[id]{scroll-margin-top:16px}
+.wrap{max-width:1320px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:14px 16px;align-items:start}
+.wrap>*{grid-column:2;margin-bottom:0!important}
+.wrap>.hero,.wrap>.filters,.wrap>.foot{grid-column:1/-1}
+.wrap>.kpis{grid-column:1;grid-row:3/span 5}
+.kpis{display:flex;flex-direction:column;gap:10px}
+.kpi{border:none;border-radius:16px;color:#fff;padding:16px 16px 14px;min-height:96px;box-shadow:0 6px 16px rgba(20,60,130,.18)}
+.kpi .l{color:#fff;opacity:.9;font-weight:600}.kpi .v{color:#fff;font-size:1.9rem}
+.kpi::after{display:block;top:auto;bottom:12px;right:14px;opacity:.3;font-size:2.1rem}
+.kpis .kpi:nth-child(1){background:linear-gradient(135deg,#3cc3ff,#2a8df0)}
+.kpis .kpi:nth-child(2){background:linear-gradient(135deg,#1f9ae8,#1368d0)}
+.kpis .kpi:nth-child(3){background:linear-gradient(135deg,#1578c4,#0d4f9c)}
+.kpis .kpi:nth-child(4){background:linear-gradient(135deg,#6a4fd8,#4a2fb0)}
+.kpis .kpi:nth-child(5){background:linear-gradient(135deg,#14c28f,#0fa37b)}
+.card{border-radius:20px;border:1px solid #d3e0ef;box-shadow:0 6px 18px rgba(30,70,140,.08)}
+.card h2{color:var(--ink);font-size:1.15rem}
+.hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hero h1{font-size:1.9rem;color:var(--ink);margin:0}.hero p{color:var(--mut);margin:2px 0 0}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:260px}
+.logo{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#34b4f5,#1565c0);display:grid;place-items:center;font-size:1.5rem}
+.tabs{display:flex;gap:4px;background:linear-gradient(90deg,#0b3d91,#1565c0);padding:6px;border-radius:40px 14px 14px 40px;flex-wrap:wrap}
+.tabs a{color:#fff;text-decoration:none;padding:9px 16px;border-radius:10px;font-size:.92rem}.tabs a:first-child,.tabs a:hover{background:rgba(255,255,255,.2)}
+.chip{background:#fff;border-color:#cdd9e8;color:var(--ink)}
+.chip[aria-pressed="true"]{background:linear-gradient(135deg,#1565c0,#2e8bf0);color:#fff;border-color:transparent}
+.reset{color:var(--acc);border-color:var(--acc)}
+.msg{border-left:5px solid #34b4f5;background:var(--card)}
+th{background:#eef4fb;color:#0b4fa8}#tb tr:hover{background:#eef6fe}
+.bcb{background:#fff;border-color:#cdd9e8}.bcb[aria-current="true"]{background:#1565c0;color:#fff;border-color:#1565c0}
+.gv{color:#0b64ad}
+.foot{background:linear-gradient(90deg,#2a1a6e,#4a2a9a);color:#fff;border-radius:14px;padding:12px 20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.9rem}
+@media(max-width:900px){.wrap{display:block}.wrap>*{margin-bottom:12px!important}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
+</style></head><body><div class="wrap">
+<header class="hero" id="top"><div class="brand"><div class="logo">📊</div><div><h1>Retail Sales Dashboard</h1>
+<p>January to April, by region and product, in Philippine pesos (₱). Click any bar to drill down.</p></div></div>
+<nav class="tabs"><a href="#top">Overview</a><a href="#charts">Breakdowns</a><a href="#share">Share of sales</a><a href="#data">Dataset</a><a href="#insights">Insights</a></nav></header>
+
+<div class="card filters" role="group" aria-label="Filters">
+<div class="fg" id="fm"><b>Month</b></div>
+<div class="fg" id="fr"><b>Region</b></div>
+<div class="fg" id="fp"><b>Product</b></div>
+<button class="reset" id="rs">Reset filters</button>
+</div>
+
+<div class="card msg" style="margin-bottom:12px">
+<h2 id="head"></h2><p id="why" class="sub" style="margin:0"></p>
+</div>
+
+<div class="kpis">
+<div class="card kpi"><div class="l">Total sales revenue</div><div class="v" id="k1"></div></div>
+<div class="card kpi"><div class="l">Total units sold</div><div class="v" id="k2"></div></div>
+<div class="card kpi"><div class="l">Average monthly sales</div><div class="v" id="k3"></div></div>
+<div class="card kpi"><div class="l">Average price per unit</div><div class="v" id="k4"></div></div>
+<div class="card kpi"><div class="l" id="k5l">Change, first to last month</div><div class="v" id="k5"></div></div>
+</div>
+
+<div class="grid" id="charts">
+<div class="card"><h2>Monthly sales trend</h2><div class="sub" id="t1" style="margin:0"></div><div class="bc" id="bc1"></div><div class="ch"><canvas id="c1"></canvas></div></div>
+<div class="card"><h2>Sales by region</h2><div class="sub" id="t2" style="margin:0"></div><div class="bc" id="bc2"></div><div class="ch"><canvas id="c2"></canvas></div></div>
+<div class="card"><h2>Sales by product</h2><div class="sub" id="t3" style="margin:0"></div><div class="bc" id="bc3"></div><div class="ch"><canvas id="c3"></canvas></div></div>
+<div class="card"><h2>Units sold by product</h2><div class="sub" id="t4" style="margin:0"></div><div class="bc" id="bc4"></div><div class="ch"><canvas id="c4"></canvas></div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+<h2 id="share">Share of sales (filtered view)</h2>
+<div class="gg">
+<div class="gw"><canvas id="g1"></canvas><div class="gv" id="gv1"></div><div class="gl">Laptop</div></div>
+<div class="gw"><canvas id="g2"></canvas><div class="gv" id="gv2"></div><div class="gl">Mobile Phone</div></div>
+<div class="gw"><canvas id="g3"></canvas><div class="gv" id="gv3"></div><div class="gl">Tablet</div></div>
+<div class="gw"><canvas id="g4"></canvas></div>
+</div></div>
+
+<div class="card" style="margin-bottom:12px">
+<h2 id="data">Dataset used</h2><p class="sub" style="margin:0 0 6px">The records below update with the filters.</p>
+<div class="sc"><table><thead><tr><th>Month</th><th>Region</th><th>Product</th><th>Sales (₱)</th><th>Units sold</th></tr></thead><tbody id="tb"></tbody></table></div>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+<h2 id="insights">Analytical summary (full dataset)</h2>
+<div class="sc"><table>
+<tr><th>Key finding</th><th>Evidence</th><th>Business implication</th></tr>
+<tr><td>Sales grew every month.</td><td>₱370,000 in January to ₱510,000 in April, up 37.8%. Monthly gains: +14.9%, +10.6%, +8.5%.</td><td>Demand is rising, but the rate of growth is slowing each month.</td></tr>
+<tr><td>Laptops drive nearly half of revenue.</td><td>₱815,000 of ₱1,775,000 (45.9%) from only 82 units. Mobile phones: ₱665,000 (37.5%). Tablets: ₱295,000 (16.6%).</td><td>Revenue depends heavily on high-priced laptops. Stock and pricing there matter most.</td></tr>
+<tr><td>Mobile phones lead in volume.</td><td>220 of 400 units (55%), but average price per unit is about ₱3,023 versus about ₱9,939 for laptops.</td><td>Phones bring customers in. Laptops bring the revenue.</td></tr>
+<tr><td>North leads, but regions are close.</td><td>North ₱475,000, South ₱450,000, West ₱430,000, East ₱420,000. The gap from first to last is only ₱55,000 (11.6% of North).</td><td>No region is failing. Small gains in East and West would narrow the gap.</td></tr>
+<tr><td>Tablets are the weakest line.</td><td>₱295,000 total (16.6% of revenue) from 98 units, and tablets appear in only 4 of 16 records.</td><td>Tablets add little revenue. Management should decide whether to promote them or reduce stock.</td></tr>
+</table></div>
+<h2 style="margin-top:14px">Recommendations</h2>
+<ul>
+<li><b>Study April.</b> It was the best month (₱510,000), led by North laptops (₱160,000). Find what drove it and repeat it in other regions.</li>
+<li><b>Protect laptop supply and bundle phones with accessories.</b> Laptops earn the most per sale; phones sell the most units.</li>
+<li><b>Review tablet strategy.</b> Run a targeted promotion in East and West, or reduce tablet stock if demand stays low.</li>
+<li><b>Share North's practices with East and West</b> to close the regional gap.</li>
+</ul>
+<p class="sub" style="margin-top:10px">Note: each row in the dataset is one product in one region and month, so not every product appears in every region. Filtered totals reflect only those rows.</p>
+</div>
+<footer class="foot"><span>Retail Sales Dashboard · January to April</span><span>All amounts in Philippine pesos (₱)</span></footer>
+</div>
+<script>
+var D=[["Jan","North","Laptop",120000,12],["Jan","South","Mobile Phone",90000,30],["Jan","East","Tablet",60000,20],["Jan","West","Laptop",100000,10],
+["Feb","North","Mobile Phone",110000,36],["Feb","South","Laptop",150000,15],["Feb","East","Mobile Phone",95000,32],["Feb","West","Tablet",70000,23],
+["Mar","North","Tablet",85000,28],["Mar","South","Mobile Phone",130000,43],["Mar","East","Laptop",140000,14],["Mar","West","Mobile Phone",115000,38],
+["Apr","North","Laptop",160000,16],["Apr","South","Tablet",80000,27],["Apr","East","Mobile Phone",125000,41],["Apr","West","Laptop",145000,15]];
+var M=["Jan","Feb","Mar","Apr"],MF={Jan:"January",Feb:"February",Mar:"March",Apr:"April"},R=["North","South","East","West"],P=["Laptop","Mobile Phone","Tablet"];
+var sel={m:new Set(M),r:new Set(R),p:new Set(P)};
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function peso(n){return "₱"+Math.round(n).toLocaleString("en-US")}
+function mk(id,list,key,labels){var el=document.getElementById(id);list.forEach(function(v){var b=document.createElement("button");b.className="chip";b.textContent=v;b.setAttribute("aria-pressed","true");b.onclick=function(){var s=sel[key];if(s.has(v)){if(s.size>1)s.delete(v)}else s.add(v);sync();draw()};b.dataset.k=key;b.dataset.v=v;el.appendChild(b)})}
+function sync(){document.querySelectorAll(".chip").forEach(function(b){b.setAttribute("aria-pressed",sel[b.dataset.k].has(b.dataset.v))})}
+mk("fm",M,"m");mk("fr",R,"r");mk("fp",P,"p");
+document.getElementById("rs").onclick=function(){sel={m:new Set(M),r:new Set(R),p:new Set(P)};sync();draw()};
+var ch={};
+function agg(rows,ix,keys,col){return keys.map(function(k){return rows.filter(function(r){return r[ix]===k}).reduce(function(a,r){return a+r[col]},0)})}
+function chart(id,type,labels,data,colors,horiz,fmt){
+ if(ch[id])ch[id].destroy();var ink=css("--mut"),ln=css("--line");
+ ch[id]=new Chart(document.getElementById(id),{type:type,data:{labels:labels,datasets:[{data:data,backgroundColor:colors,borderColor:colors,borderWidth:type==="line"?3:0,tension:0,pointRadius:5,fill:false}]},
+ options:{indexAxis:horiz?"y":"x",responsive:true,maintainAspectRatio:false,animation:false,
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmt(c.parsed[horiz?"x":"y"])}}}},
+ scales:{x:{ticks:{color:ink},grid:{display:horiz,color:ln}},y:{beginAtZero:true,ticks:{color:ink,callback:function(v){return horiz?v:fmt(v)}},grid:{color:ln}}}}});
+ if(type==="bar"){ch[id].options.plugins.datalabels=null}
+}
+function draw(){
+ var rows=D.filter(function(r){return sel.m.has(r[0])&&sel.r.has(r[1])&&sel.p.has(r[2])});
+ var tot=rows.reduce(function(a,r){return a+r[3]},0),u=rows.reduce(function(a,r){return a+r[4]},0);
+ var months=M.filter(function(m){return sel.m.has(m)});
+ document.getElementById("k1").textContent=peso(tot);document.getElementById("k2").textContent=u.toLocaleString("en-US");
+ document.getElementById("k3").textContent=peso(tot/months.length);document.getElementById("k4").textContent=u?peso(tot/u):"–";
+ var ms=agg(rows,0,M,3),rs=agg(rows,1,R,3),ps=agg(rows,2,P,3),pu=agg(rows,2,P,4);
+ var best=function(a,l){var i=a.indexOf(Math.max.apply(null,a));return a[i]>0?l[i]:"none"};
+ var full=sel.m.size===4&&sel.r.size===4&&sel.p.size===3;
+ document.getElementById("head").textContent=full?"Sales rose 37.8% from January to April, led by laptops and the North region.":"Filtered view: "+peso(tot)+" in sales across "+rows.length+" records.";
+ document.getElementById("why").textContent=full?"Why it matters: growth is real but slowing each month, and nearly half of revenue comes from laptops, so supply and pricing there carry the most risk.":"Top month: "+best(ms,M)+". Top region: "+best(rs,R)+". Top product: "+best(ps,P)+". Reset filters to see the full story.";
+ document.getElementById("t1").textContent="Highest: "+best(ms,M);document.getElementById("t2").textContent="Highest: "+best(rs,R);
+ document.getElementById("t3").textContent="Highest: "+best(ps,P);document.getElementById("t4").textContent="Most units: "+best(pu,P);
+ var g=css("--bar"),pc=[css("--laptop"),css("--mobile"),css("--tablet")];
+ chart("c1","line",M.map(function(m){return MF[m]}),ms,g,false,peso);
+ chart("c2","bar",R,rs,g,false,peso);
+ chart("c3","bar",P,ps,pc,true,peso);
+ chart("c4","bar",P,pu,pc,true,function(v){return v+" units"});
+}
+function chart(id,type,labels,data,colors,horiz,fmt,vt,ct){
+ if(ch[id])ch[id].destroy();var ink=css("--mut"),ln=css("--line"),tc=css("--ink");
+ var lab={id:"lab",afterDatasetsDraw:function(c){var x=c.ctx;x.save();x.fillStyle=tc;x.font="600 12px sans-serif";x.textAlign=horiz?"left":"center";c.getDatasetMeta(0).data.forEach(function(e,i){var t=fmt(data[i]);if(horiz)x.fillText(t,e.x+6,e.y+4);else x.fillText(t,e.x,e.y-10)});x.restore()}};
+ var val={beginAtZero:true,title:{display:true,text:vt,color:ink},ticks:{color:ink,callback:function(v){return fmt(v)}},grid:{color:ln}};
+ var cat={title:{display:true,text:ct,color:ink},ticks:{color:ink},grid:{display:false}};
+ ch[id]=new Chart(document.getElementById(id),{type:type,data:{labels:labels,datasets:[{data:data,backgroundColor:colors,borderColor:colors,borderWidth:type==="line"?3:0,pointRadius:6,pointHoverRadius:8,tension:.35,borderRadius:8,borderSkipped:false,pointBackgroundColor:"#e8fbf6",fill:false}]},plugins:[lab],
+ options:{indexAxis:horiz?"y":"x",responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:horiz?{right:90}:{top:24,right:24}},
+ plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmt(c.parsed[horiz?"x":"y"])}}}},scales:horiz?{x:val,y:cat}:{x:cat,y:val}}});
+}
+function draw(){
+ var rows=D.filter(function(r){return sel.m.has(r[0])&&sel.r.has(r[1])&&sel.p.has(r[2])});
+ var sM=M.filter(function(x){return sel.m.has(x)}),sR=R.filter(function(x){return sel.r.has(x)}),sP=P.filter(function(x){return sel.p.has(x)});
+ var tot=rows.reduce(function(a,r){return a+r[3]},0),u=rows.reduce(function(a,r){return a+r[4]},0);
+ var ms=agg(rows,0,sM,3),rs=agg(rows,1,sR,3),ps=agg(rows,2,sP,3),pu=agg(rows,2,sP,4);
+ var best=function(a,l){var i=a.indexOf(Math.max.apply(null,a));return a[i]>0?l[i]:"none"};
+ document.getElementById("k1").textContent=peso(tot);document.getElementById("k2").textContent=u.toLocaleString("en-US");
+ document.getElementById("k3").textContent=peso(tot/sM.length);document.getElementById("k4").textContent=u?peso(tot/u):"–";
+ var k5="–",k5l="Change over time (select 2+ months)";
+ if(sM.length>1){var a=ms[0],b=ms[ms.length-1];k5l="Change, "+sM[0]+" to "+sM[sM.length-1];if(a>0){var pc=(b-a)/a*100;k5=(pc>=0?"+":"")+pc.toFixed(1)+"%"}}
+ document.getElementById("k5").textContent=k5;document.getElementById("k5l").textContent=k5l;
+ var full=sel.m.size===4&&sel.r.size===4&&sel.p.size===3;
+ document.getElementById("head").textContent=full?"Sales rose 37.8% from January to April, led by laptops and the North region.":"Filtered view: "+peso(tot)+" in sales across "+rows.length+" records.";
+ document.getElementById("why").textContent=full?"Why it matters: growth is real but slowing each month, and nearly half of revenue comes from laptops, so supply and pricing there carry the most risk.":"Top month: "+best(ms,sM)+". Top region: "+best(rs,sR)+". Top product: "+best(ps,sP)+". Reset filters to see the full story.";
+ document.getElementById("t1").textContent="Highest: "+best(ms,sM);document.getElementById("t2").textContent="Highest: "+best(rs,sR);
+ document.getElementById("t3").textContent="Highest: "+best(ps,sP);document.getElementById("t4").textContent="Most units: "+best(pu,sP);
+ var cm={Laptop:css("--laptop"),"Mobile Phone":css("--mobile"),Tablet:css("--tablet")},g=css("--bar"),pcol=sP.map(function(p){return cm[p]});
+ chart("c1","line",sM.map(function(m){return MF[m]}),ms,g,false,peso,"Total sales (₱)","Month");
+ chart("c2","bar",sR,rs,g,false,peso,"Total sales (₱)","Region");
+ chart("c3","bar",sP,ps,pcol,true,peso,"Total sales (₱)","Product");
+ chart("c4","bar",sP,pu,pcol,true,function(v){return Math.round(v)+" units"},"Units sold","Product");
+ document.getElementById("tb").innerHTML=rows.length?rows.map(function(r){return "<tr><td>"+MF[r[0]]+"</td><td>"+r[1]+"</td><td>"+r[2]+"</td><td>"+r[3].toLocaleString("en-US")+"</td><td>"+r[4]+"</td></tr>"}).join(""):"<tr><td colspan=5>No records match these filters.</td></tr>";
+}
+var DIM={m:{ix:0,keys:M,lab:function(k){return MF[k]},nm:"Month",root:"All months"},r:{ix:1,keys:R,lab:function(k){return k},nm:"Region",root:"All regions"},p:{ix:2,keys:P,lab:function(k){return k},nm:"Product",root:"All products"}};
+var unitFmt=function(v){return Math.round(v)+" units"};
+var CFG={c1:{ord:["m","r","p"],col:3,fmt:peso,met:"Total sales (₱)"},c2:{ord:["r","p","m"],col:3,fmt:peso,met:"Total sales (₱)"},c3:{ord:["p","r","m"],col:3,fmt:peso,met:"Total sales (₱)"},c4:{ord:["p","r","m"],col:4,fmt:unitFmt,met:"Units sold"}};
+var st={c1:[],c2:[],c3:[],c4:[]};
+function drill(){
+ var rows=D.filter(function(r){return sel.m.has(r[0])&&sel.r.has(r[1])&&sel.p.has(r[2])});
+ var cm={Laptop:css("--laptop"),"Mobile Phone":css("--mobile"),Tablet:css("--tablet")},g=css("--bar"),rc={North:css("--rN"),South:css("--rS"),East:css("--rE"),West:css("--rW")},mc={Jan:css("--mJ"),Feb:css("--mF"),Mar:css("--mM"),Apr:css("--mA")};
+ Object.keys(CFG).forEach(function(id){
+  var c=CFG[id],n=id.slice(1),path=[],i;
+  for(i=0;i<st[id].length;i++){if(sel[c.ord[i]].has(st[id][i]))path.push(st[id][i]);else break}
+  st[id]=path;
+  var scope=rows;
+  path.forEach(function(k,j){var ix=DIM[c.ord[j]].ix;scope=scope.filter(function(r){return r[ix]===k})});
+  var lvl=path.length,dk=c.ord[lvl],d=DIM[dk];
+  var keys=d.keys.filter(function(k){return sel[dk].has(k)});
+  var vals=agg(scope,d.ix,keys,c.col),items=[];
+  keys.forEach(function(k,j){if(vals[j]>0)items.push({k:k,v:vals[j]})});
+  var tot=scope.reduce(function(a,r){return a+r[c.col]},0);
+  var top=items.length?items.reduce(function(a,o){return o.v>a.v?o:a}).k:null;
+  var where=lvl?path.map(function(k,j){return DIM[c.ord[j]].lab(k)}).join(" / ")+": ":"";
+  document.getElementById("t"+n).textContent=where+c.fmt(tot)+(top?". Highest: "+d.lab(top):"")+(lvl<2?". Click a bar to drill down.":". Lowest level.");
+  var bc=document.getElementById("bc"+n);bc.innerHTML="";
+  var crumbs=[DIM[c.ord[0]].root].concat(path.map(function(k,j){return DIM[c.ord[j]].lab(k)}));
+  crumbs.forEach(function(t,j){
+   if(j>0){var sp=document.createElement("span");sp.textContent="›";sp.style.color=css("--mut");bc.appendChild(sp)}
+   var b=document.createElement("button");b.className="bcb";b.textContent=t;
+   if(j===crumbs.length-1)b.setAttribute("aria-current","true");else b.onclick=function(){st[id]=st[id].slice(0,j);drill()};
+   bc.appendChild(b)});
+  var horiz=dk==="p";
+  var colors=items.map(function(o){return dk==="p"?cm[o.k]:dk==="r"?rc[o.k]:(dk==="m"&&lvl>0)?mc[o.k]:g});
+  chart(id,(lvl===0&&dk==="m")?"line":"bar",items.map(function(o){return d.lab(o.k)}),items.map(function(o){return o.v}),colors,horiz,c.fmt,c.met+" by "+d.nm.toLowerCase(),d.nm);
+  var ci=ch[id];
+  ci.options.onClick=function(e,els){if(!els.length||lvl>1)return;var k=items[els[0].index].k;setTimeout(function(){st[id]=path.concat([k]);drill()},0)};
+  ci.options.onHover=function(e,els){e.native.target.style.cursor=(els.length&&lvl<2)?"pointer":"default"};
+  ci.update("none");
+ });
+}
+function extra(){
+ var rows=D.filter(function(r){return sel.m.has(r[0])&&sel.r.has(r[1])&&sel.p.has(r[2])});
+ var sum=function(a,r){return a+r[3]},tot=rows.reduce(sum,0);
+ var pcol=[css("--laptop"),css("--mobile"),css("--tablet")],trk=css("--line"),mu=css("--mut");
+ P.forEach(function(p,i){
+  var v=rows.filter(function(r){return r[2]===p}).reduce(sum,0),pc=tot?v/tot*100:0,id="g"+(i+1);
+  document.getElementById("gv"+(i+1)).textContent=pc.toFixed(1)+"%";
+  if(ch[id])ch[id].destroy();
+  ch[id]=new Chart(document.getElementById(id),{type:"doughnut",data:{datasets:[{data:[pc,100-pc],backgroundColor:[pcol[i],trk],borderWidth:0}]},options:{rotation:-90,circumference:180,cutout:"78%",responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+ });
+ if(ch.g4)ch.g4.destroy();
+ ch.g4=new Chart(document.getElementById("g4"),{type:"doughnut",data:{labels:R,datasets:[{data:agg(rows,1,R,3),backgroundColor:[css("--rN"),css("--rS"),css("--rE"),css("--rW")],borderColor:css("--card"),borderWidth:3}]},options:{cutout:0,responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:"right",labels:{color:mu,boxWidth:14,generateLabels:function(c){var d=c.data.datasets[0],t=d.data.reduce(function(a,b){return a+b},0);return c.data.labels.map(function(l,i){return{text:l+"  "+(t?Math.round(d.data[i]/t*100):0)+" %",fillStyle:d.backgroundColor[i],strokeStyle:d.backgroundColor[i],fontColor:mu,index:i}})}}},tooltip:{callbacks:{label:function(c){return c.label+": "+peso(c.parsed)}}}}}});
+}
+var _d=draw;draw=function(){_d();drill();extra()};
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",draw);
+draw();
+</script></body></html>
